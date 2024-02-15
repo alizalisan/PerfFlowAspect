@@ -5,6 +5,9 @@ set(SMOKETESTS
     smoketest_class
     smoketest_MPI
     smoketest_MT
+    smoketest_wo_pfa
+    smoketest_MPI_wo_pfa
+    smoketest_MT_wo_pfa
 )
 
 find_package(MPI REQUIRED)

@@ -14,7 +14,7 @@
 
 #define N 3
 
-__attribute__((annotate("@critical_path(pointcut='around')")))
+// __attribute__((annotate("@critical_path(pointcut='around')")))
 void *foo(void *threadid)
 {
     long tid;
@@ -34,7 +34,7 @@ void *foo(void *threadid)
             temp3[j] = temp3[j] / 3;
         }
     }
-
+    
     pthread_exit(NULL);
 }
 

@@ -8,30 +8,18 @@
  * SPDX-License-Identifier: LGPL-3.0
 \************************************************************/
 
-#include <cstdio>
-#include <string>
-#include <unistd.h>
+#include <iostream>
+#include <math.h>
+#include <mpi.h>
+
+using namespace std;
+
+#define MASTER  0       //main process
 
 // __attribute__((annotate("@critical_path(pointcut='around')")))
-void bas()
+int foo(const string &str)
 {
-    printf("bas\n");
-}
-
-// __attribute__((annotate("@critical_path(pointcut='around')")))
-void bar()
-{
-    printf("bar\n");
-    usleep(1000);
-    bas();
-}
-
-// __attribute__((annotate("@critical_path()")))
-int foo(const std::string &str)
-{
-    printf("foo");
-    // usleep(1000);
-    // bar();
+    printf("foo\n");
     int temp = 0;
     int temp1[10000] = {25};
     int temp2[10000] = {22};
@@ -52,14 +40,28 @@ int foo(const std::string &str)
     return 0;
 }
 
-__attribute__((annotate("@critical_path()")))
 int main(int argc, char *argv[])
 {
-    printf("Inside main\n");
-    foo("hello");
-    return 0;
-}
+    int taskid, numProcs;
+    MPI_Status status;
 
-/*
- * vi:tabstop=4 shiftwidth=4 expandtab
- */
+    MPI_Init(&argc, &argv);
+    MPI_Comm_size(MPI_COMM_WORLD, &numProcs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &taskid);
+
+    //main process code
+    if (taskid == MASTER)
+    {
+        cout << "taskid: " << taskid << '\n';
+        foo("hello");
+    }
+
+    //worker process code
+    if (taskid != MASTER)
+    {
+        cout << "taskid: " << taskid << '\n';
+        foo("hello");
+    }
+
+    MPI_Finalize();
+}

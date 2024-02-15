@@ -8,19 +8,30 @@
  * SPDX-License-Identifier: LGPL-3.0
 \************************************************************/
 
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <string>
+#include <unistd.h>
 
-#define N 3
-
-__attribute__((annotate("@critical_path(pointcut='around')")))
-void *foo(void *threadid)
+// __attribute__((annotate("@critical_path(pointcut='around')")))
+void bas()
 {
-    long tid;
-    tid = (long)threadid;
-    printf("This is worker_thread() %ld \n", tid);
+    printf("bas\n");
+}
 
+// __attribute__((annotate("@critical_path(pointcut='around')")))
+void bar()
+{
+    printf("bar\n");
+    usleep(1000);
+    bas();
+}
+
+// __attribute__((annotate("@critical_path()")))
+int foo(const std::string &str)
+{
+    printf("foo");
+    // usleep(1000);
+    // bar();
     int temp = 0;
     int temp1[10000] = {25};
     int temp2[10000] = {22};
@@ -34,24 +45,20 @@ void *foo(void *threadid)
             temp3[j] = temp3[j] / 3;
         }
     }
-
-    pthread_exit(NULL);
-}
-
-int main()
-{
-    pthread_t my_thread[N];
-
-    long id;
-    for (id = 1; id <= N; id++)
+    if (str == "hello")
     {
-        int ret =  pthread_create(&my_thread[id], NULL, &foo, (void *)id);
-        if (ret != 0)
-        {
-            printf("Error: pthread_create() failed\n");
-            exit(EXIT_FAILURE);
-        }
+        return 1;
     }
-
-    pthread_exit(NULL);
+    return 0;
 }
+
+int main(int argc, char *argv[])
+{
+    printf("Inside main\n");
+    foo("hello");
+    return 0;
+}
+
+/*
+ * vi:tabstop=4 shiftwidth=4 expandtab
+ */
