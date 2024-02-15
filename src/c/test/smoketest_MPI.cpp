@@ -11,15 +11,17 @@
 #include <iostream>
 #include <math.h>
 #include <mpi.h>
+#include <unistd.h> 
 
 using namespace std;
 
 #define MASTER  0       //main process
 
-__attribute__((annotate("@critical_path(pointcut='around')")))
+// __attribute__((annotate("@critical_path(pointcut='around')")))
 int foo(const string &str)
 {
     printf("foo\n");
+    usleep(5000000);
     int temp = 0;
     int temp1[10000] = {25};
     int temp2[10000] = {22};
@@ -40,6 +42,7 @@ int foo(const string &str)
     return 0;
 }
 
+__attribute__((annotate("@critical_path(pointcut='around')")))
 int main(int argc, char *argv[])
 {
     int taskid, numProcs;

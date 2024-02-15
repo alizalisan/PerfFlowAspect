@@ -29,8 +29,8 @@ void bar()
 // __attribute__((annotate("@critical_path()")))
 int foo(const std::string &str)
 {
-    printf("foo");
-    // usleep(1000);
+    printf("foo\n");
+    usleep(10000000);
     // bar();
     int temp = 0;
     int temp1[10000] = {25};

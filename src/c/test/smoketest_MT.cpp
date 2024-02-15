@@ -11,15 +11,17 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h> 
 
 #define N 3
 
-__attribute__((annotate("@critical_path(pointcut='around')")))
+// __attribute__((annotate("@critical_path(pointcut='around')")))
 void *foo(void *threadid)
 {
     long tid;
     tid = (long)threadid;
     printf("This is worker_thread() %ld \n", tid);
+    usleep(5000000);
 
     int temp = 0;
     int temp1[10000] = {25};
@@ -38,6 +40,7 @@ void *foo(void *threadid)
     pthread_exit(NULL);
 }
 
+__attribute__((annotate("@critical_path(pointcut='around')")))
 int main()
 {
     pthread_t my_thread[N];

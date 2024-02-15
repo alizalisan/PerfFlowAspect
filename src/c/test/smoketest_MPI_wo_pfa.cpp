@@ -11,6 +11,7 @@
 #include <iostream>
 #include <math.h>
 #include <mpi.h>
+#include <unistd.h> 
 
 using namespace std;
 
@@ -20,6 +21,7 @@ using namespace std;
 int foo(const string &str)
 {
     printf("foo\n");
+    usleep(5000000);
     int temp = 0;
     int temp1[10000] = {25};
     int temp2[10000] = {22};
