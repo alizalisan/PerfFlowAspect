@@ -22,6 +22,8 @@
 #include <openssl/sha.h>
 #include <sys/stat.h>
 #include <sys/resource.h>
+#include <iostream>
+using namespace std;
 
 // TODO: only works for Linux
 #define my_gettid() ((pid_t)syscall(SYS_gettid))
@@ -743,7 +745,7 @@ int advice_chrome_tracing_t::before(const char *module,
     int rc;
     char *json_str;
     json_t *event, *ph, *jtemp;
-    double my_ts = 0, cpu_start, wall_start;
+    double my_ts = 0, cpu_start, wall_start, end;
     std::string fname;
     long mem_start;
 
@@ -755,6 +757,7 @@ int advice_chrome_tracing_t::before(const char *module,
         }
         if (m_compact_event_enable == 0)
         {
+            cout<<fixed<<"verbose before ts: "<<my_ts<<endl;
             if ((rc = encode_event(event, "B", nullptr, nullptr, -1, -1, -1, -1)) < 0)
             {
                 json_decref(event);
@@ -802,8 +805,18 @@ int advice_chrome_tracing_t::before(const char *module,
                     myfile << std::to_string(wall_start) << "\n";
                     myfile << std::to_string(mem_start) << "\n";
                 }
+                if ((rc = get_timestamp(my_ts)) < 0)
+                {
+                    return rc;
+                }
                 myfile << std::to_string(my_ts) << "\n";
                 myfile.close();
+                if ((rc = get_timestamp(end)) < 0)
+                {
+                    return rc;
+                }
+                cout<<fixed<<"compact before ts: "<<my_ts<<endl;
+                cout<<fixed<<"file write dur: "<<end-my_ts<<endl;
             };
         }
 
@@ -876,6 +889,7 @@ int advice_chrome_tracing_t::after(const char *module,
         {
             return rc;
         }
+        cout<<fixed<<"After ts1: "<<my_ts<<endl;
         if (m_compact_event_enable == 0)
         {
             if ((rc = encode_event(event, "E", nullptr, nullptr, -1, -1, -1, -1)) < 0)
@@ -993,6 +1007,9 @@ int advice_chrome_tracing_t::after(const char *module,
             if (std::string("around") == pcut && m_compact_event_enable == 1)
             {
                 duration = my_ts - prev_ts;
+                // cout<<fixed<<"prev_ts: "<<prev_ts<<endl;
+                // cout<<fixed<<"compact after ts: "<<my_ts<<endl;
+                cout<<fixed<<"dur: "<<duration<<endl;
                 if ((rc = create_event(&event, module, function, prev_ts)) < 0)
                 {
                     return rc;
