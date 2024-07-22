@@ -19,6 +19,8 @@ import logging
 import functools
 import hashlib
 import psutil
+from gpuutils import GpuUtils
+import GPUtil
 from urllib.parse import urlparse
 from .aspect_base import perfflowaspect
 
@@ -43,6 +45,8 @@ def cannonicalize_perfflow_options():
         perfflow_options["log-event"] = "Verbose"
     if perfflow_options.get("log-format") is None:
         perfflow_options["log-format"] = "Array"
+    if perfflow_options.get("gpu-mem-usage") is None:
+        perfflow_options["gpu-mem-usage"] = "False"
 
 
 def parse_perfflow_options():
@@ -142,6 +146,8 @@ class ChromeTracingAdvice:
     #     PERFFLOW_OPTIONS="log-event=Compact"
     # To toggle output format (default: log-format=Array)
     #     PERFFLOW_OPTIONS="log-format=Array|Object"
+    # To collect GPU utilization metrics (default: gpu-mem-usage=False)
+    #     PERFFLOW_OPTIONS="gpu-mem-usage=True"
     # You can combine the options in colon (:) delimited format
 
     parse_perfflow_options()
@@ -204,6 +210,14 @@ class ChromeTracingAdvice:
         enable_compact_log_event = False
     else:
         raise ValueError("perfflow invalid option: log-event=[Compact|Verbose]")
+
+    gpu_mem_usage = perfflow_options["gpu-mem-usage"]
+    if gpu_mem_usage in ["True", "true", "TRUE"]:
+        enable_gpu_mem_usage = True
+    elif gpu_mem_usage in ["False", "false", "FALSE"]:
+        enable_gpu_mem_usage = False
+    else:
+        raise ValueError("perfflow invalid option: gpu-mem-usage=[True|False]")
 
     logger = None
 
@@ -373,6 +387,11 @@ class ChromeTracingAdvice:
                 cpu_start = cpu_start[0]
                 time_start = time.time()
 
+            if ChromeTracingAdvice.enable_gpu_mem_usage:
+                # df_begin = GpuUtils.analyzeSystem()
+                # print(df_begin)
+                GPUtil.showUtilization()
+
             rc = func(*args, **kwargs)
 
             # Obtain end timestamp to calculate durations.
@@ -405,6 +424,11 @@ class ChromeTracingAdvice:
                     event_ts=ts_end,
                     event_args=ev_args,
                 )
+
+            if ChromeTracingAdvice.enable_gpu_mem_usage:
+                # df_end = GpuUtils.analyzeSystem()
+                # print(df_end)
+                GPUtil.showUtilization()
 
             if ChromeTracingAdvice.enable_compact_log_event:
                 dur = ts_end - ts_start
