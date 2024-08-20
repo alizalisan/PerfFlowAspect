@@ -19,7 +19,7 @@ import logging
 import functools
 import hashlib
 import psutil
-from gpuutils import GpuUtils
+# from gpuutils import GpuUtils
 import GPUtil
 from urllib.parse import urlparse
 from .aspect_base import perfflowaspect

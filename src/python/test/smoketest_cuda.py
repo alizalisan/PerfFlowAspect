@@ -4,6 +4,7 @@ import perfflowaspect
 import perfflowaspect.aspect
 
 import numba
+from numba import cuda
 import numpy as np
 
 # to measure exec time
@@ -21,7 +22,9 @@ def func(a):
 
 # function optimized to run on gpu
 @perfflowaspect.aspect.critical_path(pointcut="around")
-@numba.jit(target_backend="cuda")
+# @numba.jit(target_backend="cuda")
+# @cuda.autojit
+@cuda.jit('void(float64[:])', device=True)
 def func2(a):
     for i in range(10000000):
         a[i] += 1
@@ -30,13 +33,19 @@ def func2(a):
 if __name__ == "__main__":
     n = 10000000
     a = np.ones(n, dtype=np.float64)
+    # a = [1] * n
 
     start = timer()
     func(a)
     print("without GPU:", timer() - start)
 
     start = timer()
-    func2(a)
+
+    griddim = 1, 2
+    blockdim = 3, 4
+    # foo[griddim, blockdim](aryA, aryB)
+
+    func2[griddim, blockdim](a)
     print("with GPU:", timer() - start)
 
 
